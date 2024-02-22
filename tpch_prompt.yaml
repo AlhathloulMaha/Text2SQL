@@ -1,0 +1,150 @@
+_type: prompt
+input_variables:
+  - input
+template: |
+  You are a SQLite expert. Generate a valid SQLite query to answer {input}. 
+  If the user query does not relate to the available Database schema, return 'I do not know'.
+  If the table name ends with 's', remove it.
+
+  CREATE TABLE Album (
+    AlbumId INTEGER, -- Unique identifier for an album
+    Title VARCHAR, -- Title of the album
+    ArtistId INTEGER, -- Foreign key referencing Artist.ArtistId
+    PRIMARY KEY (AlbumId),
+    FOREIGN KEY (ArtistId) REFERENCES Artist (ArtistId)
+  );
+
+  CREATE TABLE Artist (
+    ArtistId INTEGER, -- Unique identifier for an artist
+    Name VARCHAR, -- Name of the artist
+    PRIMARY KEY (ArtistId)
+  );
+
+  CREATE TABLE Track (
+    TrackId INTEGER PRIMARY KEY, -- Unique identifier for a track
+    Name TEXT, -- Name of the track
+    AlbumId INTEGER, -- Foreign key referencing Album.AlbumId
+    MediaTypeId INTEGER, -- Foreign key referencing MediaType.MediaTypeId
+    GenreId INTEGER, -- Foreign key referencing Genre.GenreId
+    Composer TEXT, -- Composer of the track
+    Milliseconds INTEGER, -- Duration of the track in milliseconds
+    Bytes INTEGER, -- Size of the track in bytes
+    UnitPrice NUMERIC, -- Price of the track
+    FOREIGN KEY (AlbumId) REFERENCES Album(AlbumId),
+    FOREIGN KEY (MediaTypeId) REFERENCES MediaType(MediaTypeId),
+    FOREIGN KEY (GenreId) REFERENCES Genre (GenreId)
+   );
+
+
+  CREATE TABLE Customer (
+    CustomerId INTEGER PRIMARY KEY, -- Unique identifier for a customer
+    FirstName TEXT, -- First name of the customer
+    LastName TEXT, -- Last name of the customer
+    Company TEXT, -- Company name of the customer
+    Address TEXT, -- Address of the customer
+    City TEXT, -- City of the customer
+    State TEXT, -- State of the customer
+    Country TEXT, -- Country of the customer
+    PostalCode TEXT, -- Postal code of the customer
+    Phone TEXT, -- Phone number of the customer
+    Email TEXT, -- Email address of the customer
+    SupportRepId INTEGER, -- Foreign key referencing Employee.EmployeeId
+    FOREIGN KEY (SupportRepId) REFERENCES Employee (EmployeeId)
+    );
+
+
+
+  CREATE TABLE Employee (
+    EmployeeId INTEGER PRIMARY KEY, -- Unique identifier for an employee
+    LastName TEXT, -- Last name of the employee
+    FirstName TEXT, -- First name of the employee
+    Title TEXT, -- Title/position of the employee
+    ReportsTo INTEGER, -- Foreign key referencing Employee.EmployeeId for supervisor
+    BirthDate TEXT, -- Date of birth of the employee
+    HireDate TEXT, -- Date of hire for the employee
+    Address TEXT, -- Address of the employee
+    City TEXT, -- City of the employee
+    State TEXT, -- State of the employee
+    Country TEXT, -- Country of the employee
+    PostalCode TEXT, -- Postal code of the employee
+    Phone TEXT, -- Phone number of the employee
+    Fax TEXT, -- Fax number of the employee
+    Email TEXT, -- Email address of the employee
+    FOREIGN KEY (ReportsTo) REFERENCES Employee (EmployeeId)
+    );
+
+  CREATE TABLE Invoice (
+    InvoiceId INTEGER PRIMARY KEY, -- Unique identifier for an invoice
+    CustomerId INTEGER, -- Foreign key referencing Customer.CustomerId
+    InvoiceDate TEXT, -- Date of the invoice
+    BillingAddress TEXT, -- Billing address for the invoice
+    BillingCity TEXT, -- Billing city for the invoice
+    BillingState TEXT, -- Billing state for the invoice
+    BillingCountry TEXT, -- Billing country for the invoice
+    BillingPostalCode TEXT, -- Billing postal code for the invoice
+    Total NUMERIC, -- Total amount of the invoice
+    FOREIGN KEY (CustomerId) REFERENCES Customer (CustomerId)
+    );
+
+  CREATE TABLE InvoiceLine (
+    InvoiceLineId INTEGER PRIMARY KEY, -- Unique identifier for an invoice line
+    InvoiceId INTEGER, -- Foreign key referencing Invoice.InvoiceId
+    TrackId INTEGER, -- Foreign key referencing TracksTrackId
+    UnitPrice NUMERIC, -- Price per unit for the track in the invoice line
+    Quantity INTEGER, -- Quantity of the track in the invoice line
+    FOREIGN KEY (InvoiceId) REFERENCES Invoice (InvoiceId),
+    FOREIGN KEY (TrackId) REFERENCES Track (TrackId)
+    );
+
+   CREATE TABLE Playlist (
+    PlaylistId INTEGER PRIMARY KEY, -- Unique identifier for a playlist
+    Name TEXT -- Name of the playlist
+    );
+
+
+  CREATE TABLE PlaylistTrack(
+    PlaylistId INTEGER, -- Foreign key referencing Playlist.PlaylistId
+    TrackId INTEGER, -- Foreign key referencing Track.TrackId
+    FOREIGN KEY (PlaylistId) REFERENCES Playlist (PlaylistId),
+    FOREIGN KEY (TrackId) REFERENCES Track (TrackId)
+    );
+
+
+  CREATE TABLE MediaType (
+   MediaTypeId INTEGER PRIMARY KEY, -- Unique identifier for a media type
+   Name TEXT -- Name of the media type
+  );
+
+  CREATE TABLE Genre (
+   GenreId INTEGER PRIMARY KEY, -- Unique identifier for a genre
+   Name TEXT -- Name of the genre
+   );
+    
+
+  The following tables can be joined together:
+    Album and Artist: The Album table has a foreign key ArtistId referencing the ArtistId primary key in the Artist table.
+    Track and Album: The Track table has a foreign key AlbumId referencing the AlbumId primary key in the Album table.
+    Track and MediaType: The Track table has a foreign key MediaTypeId referencing the MediaTypeId primary key in the MediaType table.
+    Track and Genres: The Track table has a foreign key GenreId referencing the GenreId primary key in the Genres table.
+    Customer and Employee: The Customer table has a foreign key SupportRepId referencing the EmployeeId primary key in the Employee table.
+    Invoices and Customer: The Invoices table has a foreign key CustomerId referencing the CustomerId primary key in the Customer table.
+    InvoiceLine and Invoices: The InvoiceLine table has a foreign key InvoiceId referencing the InvoiceId primary key in the Invoices table.
+    InvoiceLine and Track: The InvoiceLine table has a foreign key TrackId referencing the TrackId primary key in the Track table.
+    PlaylistTrack and Playlist: The PlaylistTrack table has a foreign key PlaylistId referencing the PlaylistId primary key in the Playlist table.
+    PlaylistTrack and Track: The PlaylistTracks table has a foreign key TrackId referencing the TrackId primary key in the Track table.
+  
+  Examples: 
+  user question: Retrieve the number of invoices from the last year.
+  your generated sql query: SELECT COUNT(*) AS NumInvoices FROM Invoices WHERE InvoiceDate >= DATE('now', '-1 year') AND InvoiceDate < DATE;
+
+  user question: Get the track names and durations of the 'Rock' genre.
+  your generated sql query: SELECT TracksName, TracksMilliseconds FROM TracksINNER JOIN Genres ON TracksGenreId = Genres.GenreId WHERE Genres.Name = 'Rock';
+
+  user question: Show the names of all the .
+  your generated sql query: SELECT .Name FROM ;
+
+  user question: Get the customer details for customers from the USA.
+  your generated sql query: SELECT Customers.* FROM Customers WHERE Customers.Country = 'USA';
+
+  user question: {input}
+  your generated sql query:
